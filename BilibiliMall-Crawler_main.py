@@ -1,6 +1,6 @@
 # ------------------------- Configuration Modification -------------------------
 # 请填写 Bilibili Cookie 至下方引号内
-Bilibili_Cookie = ""
+BILIBILI_COOKIE = ""
 # ------------------------------------------------------------------------------
 
 import colorama
@@ -65,16 +65,16 @@ def crawler():
             "accept": "application/json, text/plain, */*",
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
             "content-type": "application/json",
-            "cookie": f'{Bilibili_Cookie}',
+            "cookie": f'{BILIBILI_COOKIE}',
             "origin": "https://mall.bilibili.com",
             "referer": "https://mall.bilibili.com/neul-next/index.html?page=magic-market_index",
-            "sec-ch-ua": "'Not_A Brand';v='8', 'Chromium';v='122', 'Microsoft Edge';v='122'",
+            "sec-ch-ua": "'Microsoft Edge';v='129', 'Not_A Brand';v='8', 'Chromium';v='129'",
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": "'Windows'",
             "sec-fetch-dest": "empty",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0"
         }
 
         try:
@@ -111,10 +111,27 @@ def crawler():
                     if response["code"] == 429:
                         pause_count += 1
                         print(f'{Fore.MAGENTA}{"-" * 70}{Style.RESET_ALL}')
-                        print(f'{Fore.YELLOW}[Error {response["code"]}] 检测到爬取器触发操作频繁提示, 暂停 30 秒后重试...{Style.RESET_ALL}')
+                        print(f'{Fore.YELLOW}[Error {response["code"]}] 检测到爬取器触发操作频繁提示, 暂停 30 秒后重试...(¥{showPrice}){Style.RESET_ALL}')
                         information_values_output(0)
                         print(f'{Fore.MAGENTA}{"-" * 70}{Style.RESET_ALL}')
                         time_sleep_10ns(3)
+                    elif response["code"] == -412:
+                        try:
+                            print(f'{Fore.MAGENTA}{"-" * 70}{Style.RESET_ALL}')
+                            print(f'{Fore.RED}[Error {response["code"]}] 检测到账号已被风控! 请更换 IP 后重试...{Style.RESET_ALL}')
+                            print(f'{Fore.YELLOW}[WARN] 从现在起, 爬取器每暂停 60 秒都将重试, 连续失败 5 次后认定爬取失败, 程序自动退出{Style.RESET_ALL}') if retry_count == 0 else ""
+                            information_values_output(1)
+                            print(f'{Fore.MAGENTA}{"-" * 70}{Style.RESET_ALL}')
+                            if retry_count < 5:
+                                retry_count += 1
+                                pause_count += 1
+                                time_sleep_10ns(6)
+                            else:
+                                print(f'{Fore.RED}[WARN] 程序退出时存在未解决的异常, 爬取的商品信息可能不完整!{Style.RESET_ALL}')
+                                break
+                        except KeyboardInterrupt:
+                            except_user_interrupt()
+                            break
                     elif response["code"] == 83000004:
                         pause_count += 1
                         print(f'{Fore.MAGENTA}{"-" * 70}{Style.RESET_ALL}')
@@ -235,12 +252,36 @@ def extract_minutes_seconds(interval_time):
     sec = int(interval_time % 60)
     return min, sec
 
+def calculate_weighted_progress(showPrice):
+    price_distribution = {
+        (0, 50): 0.2,
+        (50, 100): 0.4,
+        (100, 500): 0.25,
+        (500, 5000): 0.15
+    }
+    total_weight = 0
+
+    for price_range, price_weight in price_distribution.items():
+        min_price_range, max_price_range = price_range
+        if float(showPrice) > max_price_range:
+            total_weight += price_weight
+        elif min_price_range < float(showPrice) <= max_price_range:
+            progress = (float(showPrice) - min_price_range) / (max_price_range - min_price_range)
+            return total_weight + progress * price_weight
+
+    return 1.0  # 如果价格超过最高区间，则进度为100%
+
 def information_values_output(tag):
     global max_price, showPrice
 
     max_price = str(float(max_price) + 1) if max_price == min_price else max_price
     showPrice = str(float(showPrice) + 1) if showPrice == min_price else showPrice
-    progress = (float(showPrice) - float(min_price)) / (float(max_price) - float(min_price))
+
+    if min_price == "0" and max_price == "5000":
+        progress = calculate_weighted_progress(showPrice)
+    else:
+        progress = (float(showPrice) - float(min_price)) / (float(max_price) - float(min_price))
+
     interval_time = time.perf_counter() - start_time
     min, sec = extract_minutes_seconds(interval_time)
     remain_min, remain_sec = extract_minutes_seconds(interval_time / progress - interval_time)
@@ -254,7 +295,7 @@ def information_values_output(tag):
     elif tag == 2 and item_count != 0:  # KeyboardInterrupt 输出
         print(f'{Fore.CYAN}[INFO] 当前已爬取 {item_count} 件商品, 爬取进度 {progress * 100:.2f} %{Style.RESET_ALL}')
     elif tag == 3:  # DONE 输出
-        print(f'{Fore.GREEN}[DONE] 爬取进程结束, 本次共爬取到 {item_count} 件商品, 耗时 {min} 分 {sec} 秒!{Style.RESET_ALL}')
+        print(f'{Fore.GREEN}[DONE] 爬取进程结束, 本次在 {min_price}-{max_price} 元的区间内共爬取到 {item_count} 件商品, 耗时 {min} 分 {sec} 秒!{Style.RESET_ALL}')
         exit() if item_count == 0 else ""
 
 def time_sleep_5s():

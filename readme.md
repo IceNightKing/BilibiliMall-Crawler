@@ -10,6 +10,11 @@
 
 ## ⚜ 更新日志
 
+### 2024/09/25
+
+- \[Fix\] 修复了由于市集风控回传信息发生改变而导致的未知异常误报问题
+- \[Opt\] 由于商品数量不随价格均匀分布，全区间查询时将对爬取进度进行加权以减少误差
+
 ### 2024/03/04
 
 - \[Fix\] 修复了输出文件内商品信息不包含爬取的最后一页数据的问题
@@ -37,19 +42,25 @@
 ### 2. 安装相关依赖库
 
 - **Windows**：运行 `Installation of Dependency Libraries.bat` 安装相关依赖库
-  - 若您位于中国大陆且相关依赖库的下载速度较慢，可尝试通过 `pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/` 指令更换下载源
+
+> [!TIP]
+> 若您位于中国大陆且相关依赖库的下载速度较慢，可尝试通过 `pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/` 指令更换下载源
+
 - **macOS & Linux**：运行 `Installation of Dependency Libraries.sh` 安装相关依赖库
-  - 若您位于中国大陆且相关依赖库的下载速度较慢，可尝试通过 `pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple/` 指令更换下载源
+
+> [!TIP]
+> 若您位于中国大陆且相关依赖库的下载速度较慢，可尝试通过 `pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple/` 指令更换下载源
 
 ### 3. 配置 Bilibili Cookie 信息
 
 - 请在 `BilibiliMall-Crawler_main.py` 内找到以下代码，于引号内填写 Bilibili Cookie 信息即可
 
 ``` Python
-Bilibili_Cookie = ""
+BILIBILI_COOKIE = ""
 ```
 
-- 教程：[如何获取 Bilibili Cookie 信息](https://zmtblog.xdkd.ltd/2021/10/06/Get_bilibili_cookie/ "Get Bilibili Cookie")
+> [!TIP]
+> **教程**：[如何获取 Bilibili Cookie 信息](https://zmtblog.xdkd.ltd/2021/10/06/Get_bilibili_cookie/ "Get Bilibili Cookie")
 
 ## ⚜ 使用方法
 
@@ -64,10 +75,14 @@ Bilibili_Cookie = ""
 
 ## ⚜ 使用条款及注意事项
 
-- 本项目仅作学习交流之用，不得用于商业或非法用途
-- 本程序的使用方法和效果可能会因 Bilibili 网站的更新或变化而失效
-- 本程序可能会触发 Bilibili 网站的安全风控策略并导致账号被限制访问甚至被封禁，用户应自行评估风险后谨慎使用
-- 本程序的使用需要用户提供自己的 Bilibili Cookie 信息，该信息的泄露可能会导致账号被盗，用户应保护好自身隐私安全，不要将该信息分享给他人
-- 项目贡献者不对用户使用本程序可能给 Bilibili 网站及其母公司上海宽娱数码科技有限公司造成的任何损害或侵权行为负责，用户应自行承担一切后果和法律责任
+> [!IMPORTANT]
+> - 本项目仅作学习交流之用，不得用于商业或非法用途
+> - 本程序的使用方法和效果可能会因 Bilibili 网站的更新或变化而失效
 
+> [!WARNING]
+> - 本程序可能会触发 Bilibili 网站的安全风控策略并导致账号被限制访问甚至被封禁，用户应自行评估风险后谨慎使用
+> - 本程序的使用需要用户提供自己的 Bilibili Cookie 信息，该信息的泄露可能会导致账号被盗，用户应保护好自身隐私安全，不要将该信息分享给他人
+> - 项目贡献者不对用户使用本程序可能给 Bilibili 网站及其母公司上海宽娱数码科技有限公司造成的任何损害或侵权行为负责，用户应自行承担一切后果和法律责任
+
+> [!CAUTION]
 > **免责声明：使用本程序即视作用户已同意上述使用条款及注意事项，并充分认识到可能带来的包括但不限于账号封禁、法律纠纷等使用风险，用户同意自行承担一切后果和法律责任**
